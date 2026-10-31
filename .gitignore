@@ -1,0 +1,39 @@
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Python virtual environments
+.venv/
+venv/
+
+# Python cache
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Streamlit secrets
+.streamlit/secrets.toml
+
+# FAISS vector indexes
+*.faiss
+*.pkl
+faiss_index/
+*.index
+*.index.*
+
+# SQLite databases
+*.db
+*.sqlite
+*.sqlite3
+
+# Generated data and logs
+data/
+logs/
+*.log
+
+# IDE and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
