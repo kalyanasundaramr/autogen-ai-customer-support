@@ -230,3 +230,30 @@ This is an educational proof of concept, not a production-ready customer support
 **Proof of concept implemented — 49 automated regression tests passing.**
 
 Built as part of independent learning and practical exploration of Generative AI architecture, multi-agent systems, RAG, and human-in-the-loop automation.
+
+## Running the Streamlit Application
+
+After installing the dependencies and configuring your environment, start the application from the project root:
+
+```powershell
+.\.venv\Scripts\python.exe -m streamlit run ui/review_console.py
+```
+
+Open the local URL displayed in your terminal, typically:
+
+http://localhost:8501
+
+### Application Pages
+
+**Human Review Console**
+- Review AI-generated customer support responses.
+- Approve, revise, or reject responses.
+- Request AI-assisted response revisions.
+
+**Ticket Lifecycle**
+- View support tickets and their statuses.
+- Manage permitted ticket status transitions.
+- Inspect simulated delivery history.
+- Review ticket audit trails.
+
+**Note:** The application uses a local SQLite database. Customer response delivery is simulated; no real customer messages are sent.
