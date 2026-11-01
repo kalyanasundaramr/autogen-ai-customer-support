@@ -80,6 +80,8 @@ async def main():
             "sentiment",
             "language",
             "summary",
+            "confidence_score",
+            "confidence_explanation",
             "escalation_signals",
             "evidence_found",
             "policy_sources",
@@ -100,8 +102,44 @@ async def main():
         )
 
         assert log_record["category"] == "Shipping"
+        
+        assert isinstance(
+            log_record["confidence_score"], (int, float)
+        ), "Confidence score must be numeric"
+
+        assert not isinstance(
+            log_record["confidence_score"], bool
+        ), "Confidence score cannot be boolean"
+
+        assert 0.0 <= log_record["confidence_score"] <= 1.0, (
+            "Confidence score must be between 0.0 and 1.0"
+        )
+
+        assert isinstance(
+            log_record["confidence_explanation"], str
+        ), "Confidence explanation must be text"
+
+        assert log_record["confidence_explanation"].strip(), (
+            "Confidence explanation cannot be empty"
+        )
+
+        print(
+            "Confidence score:",
+            log_record["confidence_score"]
+        )
+        print(
+            "Confidence explanation:",
+            log_record["confidence_explanation"]
+        )
+
         assert log_record["ticket_status"] == "Pending"
         assert log_record["review_status"] == "Pending"
+        
+        print("\n========== RAW ESCALATION FIELDS ==========")
+        print("Escalation decision:", repr(log_record.get("escalation_decision")))
+        print("Escalation reason:", repr(log_record.get("escalation_reason")))
+        print("Escalation signals:", repr(log_record.get("escalation_signals")))
+
         assert log_record["escalation_decision"] == "Pending"
         assert isinstance(log_record["policy_sources"], list)
         assert isinstance(log_record["proposed_response"], str)
@@ -113,6 +151,11 @@ async def main():
         print("Review status: Pending")
         print("Escalation decision: Pending")
         print("Proposed response: Present")
+        
+        print("\n========== COMPLETE CUSTOMER RESPONSE ==========")
+        print(log_record["proposed_response"])
+        print("========== END CUSTOMER RESPONSE ==========")
+
         print("LOG RECORD VALIDATION PASSED")
 
         print("\nTEST PASSED: Four-agent sequence verified")

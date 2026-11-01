@@ -9,6 +9,7 @@ sys.path.insert(0, str(BASE_DIR))
 
 from database.db import initialize_database
 from services.ticket_query_service import list_all_tickets
+from services.ticket_export_service import export_tickets_csv
 from services.delivery_query_service import list_delivery_history
 from services.ticket_lifecycle_service import (
     ALLOWED_TRANSITIONS,
@@ -16,6 +17,7 @@ from services.ticket_lifecycle_service import (
     update_ticket_status,
 )
 from services.ticket_audit_query_service import list_ticket_audit_history
+
 
 st.set_page_config(
     page_title="Ticket Lifecycle | AI Customer Support",
@@ -88,13 +90,23 @@ for ticket in tickets:
         "Review Status": ticket["review_status"],
     })
 
+
 st.dataframe(
     table_data,
     use_container_width=True,
     hide_index=True,
 )
 
+st.download_button(
+    label="Download Ticket Log (CSV)",
+    data=export_tickets_csv().encode("utf-8-sig"),
+    file_name="customer_support_tickets.csv",
+    mime="text/csv",
+    key="download_ticket_log_csv",
+)
+
 st.divider()
+
 
 # ------------------------------------------
 # Ticket details

@@ -42,6 +42,17 @@ RULES:
 
 - Preserve the proposed customer response.
 
+- Copy the Resolution Agent's Confidence Score
+  into the confidence_score field as a JSON number
+  between 0.0 and 1.0.
+
+- Never invent or increase the confidence score.
+
+- If the Resolution Agent does not provide a valid
+  confidence score, use null.
+
+- Preserve the confidence explanation when available.
+
 - Use an authoritative escalation decision
   when supplied. Do not override it.
 
@@ -71,7 +82,10 @@ Return valid JSON with these fields:
   "policy_sources": [
     "shipping_policy.md | Delayed Deliveries"
   ],
+
   "proposed_response": "Customer response draft",
+  "confidence_score": 0.85,
+  "confidence_explanation": "The supplied policy directly addresses the complaint.",
   "escalation_decision": "Pending",
   "escalation_reason": null,
   "ticket_status": "Pending",

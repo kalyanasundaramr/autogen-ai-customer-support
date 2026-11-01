@@ -32,6 +32,17 @@ class TicketRecord(BaseModel):
 
     proposed_response: str = Field(min_length=1)
 
+    
+    confidence_score: float | None = Field(
+        default=None,
+        ge=0.0,
+        le=1.0,
+        allow_inf_nan=False,
+    )
+
+    confidence_explanation: str | None = None
+
+
     escalation_decision: Literal["Pending", "Escalated"]
     escalation_reason: str | None
 

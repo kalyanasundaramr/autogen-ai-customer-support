@@ -12,16 +12,29 @@ from services.delivery_validation_service import (
 )
 
 
-def test_approved_ticket():
-    result = validate_approved_response("TKT-000010")
+
+def test_approved_ticket(sample_ticket):
+    """Verify an approved ticket is eligible for delivery."""
+
+    from database.db import get_connection
+
+    # Approve the ticket created by the pytest fixture.
+    with get_connection() as connection:
+        connection.execute(
+            """
+            UPDATE tickets
+            SET review_status = 'Approved'
+            WHERE ticket_id = ?
+            """,
+            (sample_ticket,),
+        )
+
+    result = validate_approved_response(sample_ticket)
 
     assert result["delivery_eligible"] is True
     assert result["review_status"] == "Approved"
     assert result["delivery_mode"] == "simulation"
     assert result["response"].strip()
-
-    print("PASS: Approved ticket is eligible for delivery")
-
 
 def test_missing_ticket():
     try:
@@ -89,6 +102,34 @@ def test_unresolved_placeholders():
             raise AssertionError("Placeholder was accepted")
         except DeliveryValidationError:
             print("PASS: Unresolved placeholder blocked")
+
+
+def test_customer_ready_response_without_placeholders():
+    """A professional response without placeholders should be accepted."""
+
+    ticket = {
+        "ticket_id": "TKT-TEST",
+        "review_status": "Approved",
+        "ticket_status": "Pending",
+        "proposed_response": (
+            "Dear Customer,\n\n"
+            "Thank you for contacting us about your delayed order. "
+            "Please provide your order ID so our support team "
+            "can investigate the issue.\n\n"
+            "Best regards,\n"
+            "Customer Support Team"
+        ),
+    }
+
+    with patch(
+        "services.delivery_validation_service.get_ticket",
+        return_value=ticket,
+    ):
+        result = validate_approved_response("TKT-TEST")
+
+    assert result["delivery_eligible"] is True
+    assert result["response"] == ticket["proposed_response"]
+    print("PASS: Customer-ready response accepted")
 
 
 def test_unsupported_status():

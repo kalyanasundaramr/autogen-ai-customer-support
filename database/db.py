@@ -59,6 +59,30 @@ def initialize_database():
                 updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
             )
         """)
+        
+        # Add confidence fields to existing databases safely.
+        existing_columns = {
+            row["name"]
+            for row in connection.execute(
+                "PRAGMA table_info(tickets)"
+            ).fetchall()
+        }
+
+        if "confidence_score" not in existing_columns:
+            connection.execute(
+                """
+                ALTER TABLE tickets
+                ADD COLUMN confidence_score REAL
+                """
+            )
+
+        if "confidence_explanation" not in existing_columns:
+            connection.execute(
+                """
+                ALTER TABLE tickets
+                ADD COLUMN confidence_explanation TEXT
+                """
+            )
 
         connection.execute("""
             CREATE TABLE IF NOT EXISTS ticket_audit_logs (

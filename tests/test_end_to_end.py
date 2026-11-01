@@ -57,6 +57,52 @@ async def main():
         print("Review status:", ticket["review_status"])
         print("Evidence found:", ticket["evidence_found"])
         print("Policy sources:", ticket["policy_sources"])
+        
+        print("\n========== AI CONFIDENCE ==========")
+        print("Confidence score:", ticket["confidence_score"])
+        print(
+            "Confidence explanation:",
+            ticket["confidence_explanation"],
+        )
+
+        assert isinstance(
+            ticket["confidence_score"], (int, float)
+        ) and not isinstance(
+            ticket["confidence_score"], bool
+        ), "Saved confidence score must be numeric"
+
+        assert 0.0 <= ticket["confidence_score"] <= 1.0, (
+            "Saved confidence score must be between 0.0 and 1.0"
+        )
+
+        assert isinstance(
+            ticket["confidence_explanation"], str
+        ), "Saved confidence explanation must be text"
+
+        assert ticket["confidence_explanation"].strip(), (
+            "Saved confidence explanation cannot be empty"
+        )
+
+        with get_connection() as connection:
+            confidence_row = connection.execute(
+                """
+                SELECT confidence_score, confidence_explanation
+                FROM tickets
+                WHERE ticket_id = ?
+                """,
+                (ticket_id,),
+            ).fetchone()
+
+        assert confidence_row is not None
+        assert confidence_row["confidence_score"] == (
+            ticket["confidence_score"]
+        )
+        assert confidence_row["confidence_explanation"] == (
+            ticket["confidence_explanation"]
+        )
+
+        print("AI confidence SQLite persistence: PASS")
+
 
         print("\n========== PROPOSED RESPONSE ==========")
         print(ticket["proposed_response"])

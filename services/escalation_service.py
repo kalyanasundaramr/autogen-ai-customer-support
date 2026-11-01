@@ -30,6 +30,26 @@ def evaluate_escalation(
     combined_text = complaint + " " + signal_text
 
     reasons = []
+    
+    # Confidence-based escalation.
+    # The threshold is a project-defined heuristic.
+    confidence_threshold = 0.70
+    confidence_score = record.get("confidence_score")
+
+    if confidence_score is None:
+        reasons.append("AI confidence score unavailable")
+    elif (
+        isinstance(confidence_score, bool)
+        or not isinstance(confidence_score, (int, float))
+        or not (0.0 <= confidence_score <= 1.0)
+    ):
+        reasons.append("Invalid AI confidence score")
+    elif confidence_score < confidence_threshold:
+        reasons.append(
+            f"Low AI confidence ({confidence_score:.2f} "
+            f"< {confidence_threshold:.2f})"
+        )
+
 
     if urgency == "high":
         reasons.append("High urgency")

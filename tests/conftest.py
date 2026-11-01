@@ -59,11 +59,18 @@ def sample_ticket_data():
             "policy_sources": [
                 "shipping_policy.md | Delayed Deliveries"
             ],
+            
             "proposed_response": (
                 "Dear Customer, please provide your order ID "
                 "so our support team can investigate."
             ),
+            "confidence_score": 0.90,
+            "confidence_explanation": (
+                "Relevant shipping policy evidence supports "
+                "the proposed response."
+            ),
             "escalation_decision": "No",
+
             "escalation_reason": None,
             "ticket_status": "Pending",
             "review_status": "Pending",

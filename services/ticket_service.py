@@ -85,12 +85,14 @@ def create_ticket(original_complaint: str, record: dict) -> str:
                 evidence_found,
                 policy_sources,
                 proposed_response,
+                confidence_score,
+                confidence_explanation,
                 escalation_decision,
                 escalation_reason,
                 ticket_status,
                 review_status
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 original_complaint.strip(),
@@ -103,6 +105,8 @@ def create_ticket(original_complaint: str, record: dict) -> str:
                 int(record["evidence_found"]),
                 json.dumps(record["policy_sources"]),
                 record["proposed_response"],
+                record.get("confidence_score"),
+                record.get("confidence_explanation"),
                 escalation_decision,
                 escalation_reason,
                 ticket_status,
