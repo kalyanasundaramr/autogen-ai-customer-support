@@ -28,3 +28,7 @@ htmlcov/
 # Local RAG and customer support data
 /data/faiss_index/
 /data/support_tickets.db
+
+# Local backup files
+*.backup
+*.backup.*

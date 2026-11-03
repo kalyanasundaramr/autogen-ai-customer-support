@@ -72,15 +72,20 @@ def test_agent_sequence(completed_agents, expected_next):
     assert select_next_agent(messages) == expected_next
 
 
+
 def test_log_agent_termination():
     messages = [
         make_message("customer_query_agent"),
         make_message("knowledge_base_agent"),
         make_message("resolution_agent"),
-        make_message("log_agent"),
+        TextMessage(
+            source="log_agent",
+            content='{"category": "Billing"}',
+        ),
     ]
 
     assert log_agent_completed(messages) is True
+
 
 
 def test_no_early_termination():

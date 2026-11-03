@@ -157,7 +157,7 @@ async def test_invalid_agent_order_rejected(
         lambda model_client: FakeTeam(),
     )
 
-    with pytest.raises(RuntimeError, match="execution order"):
+    with pytest.raises(RuntimeError, match="Agent dependencies violated"):
         await support_service.process_customer_complaint(
             complaint=sample_ticket_data["complaint"],
             model_client=object(),
@@ -226,7 +226,10 @@ async def test_missing_log_agent_response_rejected(
         lambda model_client: FakeTeam(),
     )
 
-    with pytest.raises(RuntimeError, match="execution order"):
+    with pytest.raises(
+            RuntimeError,
+            match="maximum message limit",
+        ):
         await support_service.process_customer_complaint(
             complaint=sample_ticket_data["complaint"],
             model_client=object(),
@@ -325,3 +328,173 @@ async def test_ticket_persistence_failure_propagates(
     # The service must not retrieve or return a ticket
     # after the database write has failed.
     get_ticket_mock.assert_not_called()
+
+@pytest.mark.asyncio
+async def test_backward_agent_transition_rejected(
+    monkeypatch,
+    sample_ticket_data,
+):
+    """Reject an agent returning after a downstream stage."""
+
+    record = sample_ticket_data["record"].copy()
+    messages = make_agent_messages(record)
+
+    # Insert another customer analysis after resolution.
+    messages.insert(3, messages[0])
+
+    class FakeTeam:
+        async def run(self, task):
+            return SimpleNamespace(
+                messages=messages,
+                stop_reason="Completed",
+            )
+
+    monkeypatch.setattr(
+        support_service,
+        "create_support_workflow",
+        lambda model_client: FakeTeam(),
+    )
+
+    with pytest.raises(
+        RuntimeError,
+        match="Agent dependencies violated",
+    ):
+        await support_service.process_customer_complaint(
+            sample_ticket_data["complaint"],
+            object(),
+        )
+
+@pytest.mark.asyncio
+async def test_premature_log_agent_rejected(
+    monkeypatch,
+    sample_ticket_data,
+):
+    """Reject logging before resolution is complete."""
+
+    record = sample_ticket_data["record"].copy()
+    messages = make_agent_messages(record)
+
+    # Simulate logging before resolution.
+    messages[2], messages[3] = messages[3], messages[2]
+
+    class FakeTeam:
+        async def run(self, task):
+            return SimpleNamespace(
+                messages=messages,
+                stop_reason="Completed",
+            )
+
+    monkeypatch.setattr(
+        support_service,
+        "create_support_workflow",
+        lambda model_client: FakeTeam(),
+    )
+
+    with pytest.raises(
+        RuntimeError,
+        match="Agent dependencies violated",
+    ):
+        await support_service.process_customer_complaint(
+            sample_ticket_data["complaint"],
+            object(),
+        )
+
+@pytest.mark.asyncio
+async def test_incomplete_log_record_rejected(
+    monkeypatch,
+    sample_ticket_data,
+):
+    """Reject incomplete Log Agent JSON before ticket creation."""
+
+    messages = make_agent_messages(
+        sample_ticket_data["record"].copy()
+    )
+
+    # Valid JSON, but missing required ticket fields.
+    messages[-1] = TextMessage(
+        source="log_agent",
+        content='{"category": "Billing"}',
+    )
+
+    class FakeTeam:
+        async def run(self, task):
+            return SimpleNamespace(
+                messages=messages,
+                stop_reason="Completed",
+            )
+
+    monkeypatch.setattr(
+        support_service,
+        "create_support_workflow",
+        lambda model_client: FakeTeam(),
+    )
+
+    with pytest.raises((ValueError, KeyError, TypeError)):
+        await support_service.process_customer_complaint(
+            sample_ticket_data["complaint"],
+            object(),
+        )
+
+@pytest.mark.asyncio
+async def test_max_message_termination_rejected(
+    monkeypatch,
+    sample_ticket_data,
+):
+    """Reject a workflow stopped by its message limit."""
+
+    messages = make_agent_messages(
+        sample_ticket_data["record"].copy()
+    )
+
+    class FakeTeam:
+        async def run(self, task):
+            return SimpleNamespace(
+                messages=messages,
+                stop_reason="Maximum number of messages reached",
+            )
+
+    monkeypatch.setattr(
+        support_service,
+        "create_support_workflow",
+        lambda model_client: FakeTeam(),
+    )
+
+    with pytest.raises(RuntimeError):
+        await support_service.process_customer_complaint(
+            sample_ticket_data["complaint"],
+            object(),
+        )
+
+
+@pytest.mark.asyncio
+async def test_missing_log_agent_without_message_limit(
+    monkeypatch,
+    sample_ticket_data,
+):
+    """Reject an incomplete workflow without a message-limit error."""
+
+    messages = make_agent_messages(
+        sample_ticket_data["record"].copy()
+    )[:-1]
+
+    class FakeTeam:
+        async def run(self, task):
+            return SimpleNamespace(
+                messages=messages,
+                stop_reason="Completed",
+            )
+
+    monkeypatch.setattr(
+        support_service,
+        "create_support_workflow",
+        lambda model_client: FakeTeam(),
+    )
+
+    with pytest.raises(
+        RuntimeError,
+        match="Workflow incomplete",
+    ):
+        await support_service.process_customer_complaint(
+            sample_ticket_data["complaint"],
+            object(),
+        )

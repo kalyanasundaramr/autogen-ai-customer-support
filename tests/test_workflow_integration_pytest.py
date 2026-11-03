@@ -57,10 +57,9 @@ def test_workflow_construction(monkeypatch):
 
     assert kwargs["participants"] == fake_agents
     assert kwargs["model_client"] is model_client
-    assert kwargs["selector_func"] is (
-        support_workflow.select_next_agent
-    )
-    assert kwargs["allow_repeated_speaker"] is True
+    assert "selector_func" not in kwargs
+    assert "selector_prompt" in kwargs
+    assert kwargs["allow_repeated_speaker"] is False
     assert kwargs["termination_condition"] is not None
 
     for factory_name in factory_names:
@@ -69,3 +68,77 @@ def test_workflow_construction(monkeypatch):
             factory_name,
         )
         factory.assert_called_once_with(model_client)
+
+import json
+from autogen_agentchat.messages import TextMessage
+
+
+
+def test_log_agent_termination_validation():
+    """Terminate on valid Log Agent JSON, including message deltas."""
+
+    def msg(source, content):
+        return TextMessage(source=source, content=content)
+
+    valid_log = msg(
+        "log_agent",
+        json.dumps({"category": "Billing"}),
+    )
+
+    # A valid Log Agent response triggers termination.
+    assert support_workflow.log_agent_completed([valid_log])
+
+    # Earlier agents alone must not trigger termination.
+    assert not support_workflow.log_agent_completed([
+        msg("customer_query_agent", "Analysis completed"),
+        msg("knowledge_base_agent", "Evidence retrieved"),
+        msg("resolution_agent", "Response drafted"),
+    ])
+
+    # Invalid JSON must not trigger termination.
+    assert not support_workflow.log_agent_completed([
+        msg("log_agent", "Invalid JSON")
+    ])
+
+    # A JSON array is not a valid ticket object.
+    assert not support_workflow.log_agent_completed([
+        msg("log_agent", "[]")
+    ])
+
+
+
+
+def test_log_agent_termination_with_repeated_agents():
+    """Terminate on valid Log Agent JSON, regardless of prior messages."""
+
+    def msg(source, content):
+        return TextMessage(source=source, content=content)
+
+    valid_messages = [
+        msg("customer_query_agent", "Complaint analyzed"),
+        msg("knowledge_base_agent", "Initial evidence"),
+        msg("knowledge_base_agent", "Additional evidence"),
+        msg("resolution_agent", "Response drafted"),
+        msg("log_agent", '{"category": "Billing"}'),
+    ]
+
+    # Valid Log Agent JSON triggers termination.
+    assert support_workflow.log_agent_completed(valid_messages)
+
+    # Termination also works when only the latest message is supplied.
+    assert support_workflow.log_agent_completed([
+        valid_messages[-1]
+    ])
+
+    # A backward transition does not prevent termination.
+    # The support service must reject the invalid agent sequence.
+    invalid_messages = [
+        msg("customer_query_agent", "Complaint analyzed"),
+        msg("knowledge_base_agent", "Evidence retrieved"),
+        msg("resolution_agent", "Response drafted"),
+        msg("customer_query_agent", "Late analysis"),
+        msg("log_agent", '{"category": "Billing"}'),
+    ]
+
+    assert support_workflow.log_agent_completed(invalid_messages)
+

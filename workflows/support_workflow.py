@@ -42,14 +42,29 @@ def select_next_agent(messages):
     return AGENT_ORDER[next_index]
 
 
-def log_agent_completed(messages):
-    """Return True when the Log Agent has produced a text response."""
 
-    return any(
-        isinstance(message, TextMessage)
-        and message.source == "log_agent"
-        for message in messages
-    )
+
+
+def log_agent_completed(messages):
+    """Terminate when the Log Agent produces valid JSON."""
+    import json
+
+    for message in messages:
+        if (
+            isinstance(message, TextMessage)
+            and message.source == "log_agent"
+        ):
+            try:
+                record = json.loads(message.content)
+            except (TypeError, json.JSONDecodeError):
+                continue
+
+            if isinstance(record, dict):
+                return True
+
+    return False
+
+
 
 
 def create_support_workflow(model_client):
@@ -81,12 +96,38 @@ def create_support_workflow(model_client):
         | MaxMessageTermination(max_messages=20)
     )
 
+    
     team = SelectorGroupChat(
         participants=participants,
         model_client=model_client,
-        selector_func=select_next_agent,
+        selector_prompt="""
+    You are coordinating a customer support workflow.
+
+    Available agents:
+    {roles}
+
+    Conversation history:
+    {history}
+
+    Select the next agent from:
+    {participants}
+
+    Workflow dependencies:
+    1. customer_query_agent analyzes the original complaint.
+    2. knowledge_base_agent retrieves relevant policy evidence.
+    3. resolution_agent drafts a response using the analysis
+    and retrieved evidence.
+    4. log_agent prepares the final structured ticket record.
+
+    Only select an agent when its required inputs are available.
+    Do not select log_agent before resolution_agent has completed.
+    Do not select an agent whose task is already complete.
+
+    Return only the selected agent name.
+    """,
         termination_condition=termination,
-        allow_repeated_speaker=True,
+        allow_repeated_speaker=False,
     )
+
 
     return team

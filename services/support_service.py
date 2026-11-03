@@ -32,6 +32,18 @@ async def process_customer_complaint(
 
     result = await team.run(task=complaint.strip())
 
+     
+       
+    # Reject workflows that did not terminate successfully.
+    stop_reason = result.stop_reason or ""
+
+    if "maximum" in stop_reason.lower() and "message" in stop_reason.lower():
+        raise RuntimeError(
+            "Workflow terminated due to maximum message limit. "
+            "Ticket creation aborted."
+        )
+
+
     # Collect final text responses from each agent.
     agent_messages = [
         message
@@ -44,15 +56,60 @@ async def process_customer_complaint(
         message.source for message in agent_messages
     ]
 
-    if execution_order != AGENT_ORDER:
+    
+    # Validate dependencies without requiring exactly four messages.
+    required_agents = [
+        "customer_query_agent",
+        "knowledge_base_agent",
+        "resolution_agent",
+        "log_agent",
+    ]
+
+    first_positions = {}
+
+    for index, agent_name in enumerate(execution_order):
+        if agent_name not in first_positions:
+            first_positions[agent_name] = index
+
+    missing_agents = [
+        name for name in required_agents
+        if name not in first_positions
+    ]
+
+    if missing_agents:
         raise RuntimeError(
-            f"Unexpected agent execution order: {execution_order}"
+            f"Workflow incomplete. Missing agents: {missing_agents}"
         )
 
-    if len(agent_messages) != 4:
+    positions = [
+        first_positions[name] for name in required_agents
+    ]
+
+    if positions != sorted(positions):
         raise RuntimeError(
-            "Expected exactly four agent responses."
+            f"Agent dependencies violated: {execution_order}"
         )
+        # Reject backward transitions between workflow stages.
+    stage_index = {
+        name: index
+        for index, name in enumerate(required_agents)
+    }
+
+    for previous, current in zip(
+        execution_order,
+        execution_order[1:],
+    ):
+        if stage_index[current] < stage_index[previous]:
+            raise RuntimeError(
+                "Agent dependencies violated: "
+                f"{execution_order}"
+            )
+
+    if execution_order[-1] != "log_agent":
+        raise RuntimeError(
+            "Log Agent must complete the workflow."
+        )
+
 
     # Extract the Log Agent's structured record.
     log_response = agent_messages[-1].content

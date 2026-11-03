@@ -75,6 +75,7 @@ def test_user_message_does_not_skip_agent():
     assert select_next_agent(messages) == "knowledge_base_agent"
 
 
+
 def test_log_agent_termination_requires_text():
     messages = [
         TextMessage(
@@ -92,4 +93,7 @@ def test_log_agent_termination_requires_text():
         )
     )
 
+   # Valid Log Agent JSON triggers termination.
+    # The support service validates the complete agent sequence.
     assert log_agent_completed(messages) is True
+
