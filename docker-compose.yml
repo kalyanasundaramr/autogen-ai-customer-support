@@ -1,0 +1,30 @@
+services:
+  customer-support:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    container_name: autogen-customer-support
+
+    ports:
+      - "8503:8501"
+
+    env_file:
+      - .env
+
+    volumes:
+      # Persist SQLite tickets and audit records
+      - ./data:/app/data
+
+    restart: unless-stopped
+
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://localhost:8501/_stcore/health')"
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s

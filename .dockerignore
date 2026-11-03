@@ -1,0 +1,42 @@
+# Python virtual environments
+.venv/
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+
+# Secrets and environment variables
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Git and editor files
+.git/
+.gitignore
+.vscode/
+.idea/
+
+# Local databases and runtime files
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+logs/
+*.log
+
+# Generated FAISS indexes
+data/faiss_index/
+
+# Tests and backups
+tests/
+ui_backup_before_tabs/
+legacy_ui_pages/
+
+# Local development artifacts
+.streamlit/secrets.toml
+.DS_Store
