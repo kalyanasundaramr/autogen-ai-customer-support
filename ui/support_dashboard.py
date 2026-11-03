@@ -5,6 +5,9 @@ import os
 from autogen_ext.models.openai import OpenAIChatCompletionClient
 from services.support_service import process_customer_complaint
 
+from services.human_review_agent_service import (
+    collect_human_review,
+)
 import sys
 from pathlib import Path
 
@@ -752,32 +755,52 @@ with tab_review:
                 type="primary",
             )
 
+        
         if submit_review:
             if not reviewer.strip():
                 st.error("Reviewer name is required.")
 
-            elif action == "Revise" and not notes.strip():
+            elif action in ("Revise", "Reject") and not notes.strip():
                 st.error(
-                    "Revision instructions are required."
+                    "Review notes are required for revision or rejection."
                 )
 
             else:
                 try:
+                    with st.spinner(
+                        "UserProxyAgent is processing the human review..."
+                    ):
+                        agent_decision = asyncio.run(
+                            collect_human_review(
+                                reviewer=reviewer.strip(),
+                                action=action,
+                                notes=notes.strip(),
+                            )
+                        )
+
                     result = review_ticket(
                         ticket_id=review_id,
-                        action=action,
-                        reviewer=reviewer.strip(),
-                        notes=notes.strip(),
+                        action=agent_decision["action"],
+                        reviewer=agent_decision["reviewer"],
+                        notes=agent_decision["notes"],
                     )
 
                     st.session_state["review_notice"] = (
                         f"Ticket {review_id}: "
-                        f"{result['review_status']}"
+                        f"{result['review_status']} "
+                        f"(via UserProxyAgent)"
                     )
+
                     st.rerun()
 
                 except ValueError as exc:
                     st.error(str(exc))
+
+                except Exception as exc:
+                    st.error(
+                        f"Human review processing failed: {exc}"
+                    )
+
 
     if "review_notice" in st.session_state:
         st.success(
