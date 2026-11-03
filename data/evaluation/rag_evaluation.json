@@ -1,0 +1,328 @@
+{
+  "evaluated_at": "2026-11-03T15:37:07.026643+00:00",
+  "total_questions": 20,
+  "hit_rate_at_5": 1.0,
+  "mrr_at_5": 1.0,
+  "results": [
+    {
+      "id": "SHIP-01",
+      "question": "How many business days does standard delivery normally take after dispatch?",
+      "expected_source": "shipping_policy.md",
+      "expected_section": "Standard Delivery",
+      "hit_at_5": true,
+      "rank": 1,
+      "reciprocal_rank": 1.0,
+      "retrieved_sections": [
+        "shipping_policy.md::Standard Delivery",
+        "shipping_policy.md::Escalation",
+        "refund_policy.md::Refund Processing",
+        "shipping_policy.md::Delayed Deliveries",
+        "shipping_policy.md::Delivery Investigation"
+      ]
+    },
+    {
+      "id": "SHIP-02",
+      "question": "My order is past its estimated delivery date. What should I do?",
+      "expected_source": "shipping_policy.md",
+      "expected_section": "Delayed Deliveries",
+      "hit_at_5": true,
+      "rank": 1,
+      "reciprocal_rank": 1.0,
+      "retrieved_sections": [
+        "shipping_policy.md::Delayed Deliveries",
+        "shipping_policy.md::Escalation",
+        "product_faq.md::Incorrect Product Delivered",
+        "shipping_policy.md::Delivery Investigation",
+        "product_faq.md::Damaged Products"
+      ]
+    },
+    {
+      "id": "SHIP-03",
+      "question": "My order is more than seven days late. Does it need human support review?",
+      "expected_source": "shipping_policy.md",
+      "expected_section": "Escalation",
+      "hit_at_5": true,
+      "rank": 1,
+      "reciprocal_rank": 1.0,
+      "retrieved_sections": [
+        "shipping_policy.md::Escalation",
+        "refund_policy.md::Refund Requests Outside the Return Window",
+        "shipping_policy.md::Delayed Deliveries",
+        "shipping_policy.md::Delivery Investigation",
+        "refund_policy.md::Refund Escalation"
+      ]
+    },
+    {
+      "id": "SHIP-04",
+      "question": "Tracking says my package was delivered, but I never received it.",
+      "expected_source": "shipping_policy.md",
+      "expected_section": "Missing Packages",
+      "hit_at_5": true,
+      "rank": 1,
+      "reciprocal_rank": 1.0,
+      "retrieved_sections": [
+        "shipping_policy.md::Missing Packages",
+        "shipping_policy.md::Delivery Investigation",
+        "shipping_policy.md::Order Tracking",
+        "shipping_policy.md::Delayed Deliveries",
+        "product_faq.md::Incorrect Product Delivered"
+      ]
+    },
+    {
+      "id": "REF-01",
+      "question": "Can I return an eligible product within 15 days of delivery?",
+      "expected_source": "refund_policy.md",
+      "expected_section": "Return Eligibility",
+      "hit_at_5": true,
+      "rank": 1,
+      "reciprocal_rank": 1.0,
+      "retrieved_sections": [
+        "refund_policy.md::Return Eligibility",
+        "product_faq.md::Defective Products",
+        "refund_policy.md::Damaged or Defective Products",
+        "product_faq.md::Damaged Products",
+        "refund_policy.md::Return Conditions"
+      ]
+    },
+    {
+      "id": "REF-02",
+      "question": "Do I need the original accessories and proof of purchase for a return?",
+      "expected_source": "refund_policy.md",
+      "expected_section": "Return Conditions",
+      "hit_at_5": true,
+      "rank": 1,
+      "reciprocal_rank": 1.0,
+      "retrieved_sections": [
+        "refund_policy.md::Return Conditions",
+        "refund_policy.md::Return Eligibility",
+        "product_faq.md::Defective Products",
+        "refund_policy.md::Refund Escalation",
+        "refund_policy.md::Damaged or Defective Products"
+      ]
+    },
+    {
+      "id": "REF-03",
+      "question": "How long does an approved refund normally take to reach my original payment method?",
+      "expected_source": "refund_policy.md",
+      "expected_section": "Refund Processing",
+      "hit_at_5": true,
+      "rank": 1,
+      "reciprocal_rank": 1.0,
+      "retrieved_sections": [
+        "refund_policy.md::Refund Processing",
+        "billing_policy.md::Refund for Payment Errors",
+        "refund_policy.md::Refund Requests Outside the Return Window",
+        "refund_policy.md::Refund Escalation",
+        "product_faq.md::Replacement Process"
+      ]
+    },
+    {
+      "id": "REF-04",
+      "question": "I want a refund 20 days after delivery. Does a human need to review it?",
+      "expected_source": "refund_policy.md",
+      "expected_section": "Refund Requests Outside the Return Window",
+      "hit_at_5": true,
+      "rank": 1,
+      "reciprocal_rank": 1.0,
+      "retrieved_sections": [
+        "refund_policy.md::Refund Requests Outside the Return Window",
+        "refund_policy.md::Refund Escalation",
+        "refund_policy.md::Damaged or Defective Products",
+        "shipping_policy.md::Escalation",
+        "refund_policy.md::Refund Processing"
+      ]
+    },
+    {
+      "id": "BILL-01",
+      "question": "What information should I provide if I was charged twice for an order?",
+      "expected_source": "billing_policy.md",
+      "expected_section": "Duplicate Charges",
+      "hit_at_5": true,
+      "rank": 1,
+      "reciprocal_rank": 1.0,
+      "retrieved_sections": [
+        "billing_policy.md::Duplicate Charges",
+        "billing_policy.md::Incorrect Billing Amount",
+        "product_faq.md::Incorrect Product Delivered",
+        "shipping_policy.md::Delayed Deliveries",
+        "billing_policy.md::Fraud and Unauthorized Transactions"
+      ]
+    },
+    {
+      "id": "BILL-02",
+      "question": "My payment failed. Should I keep retrying the transaction?",
+      "expected_source": "billing_policy.md",
+      "expected_section": "Failed Payments",
+      "hit_at_5": true,
+      "rank": 1,
+      "reciprocal_rank": 1.0,
+      "retrieved_sections": [
+        "billing_policy.md::Failed Payments",
+        "billing_policy.md::Fraud and Unauthorized Transactions",
+        "billing_policy.md::Refund for Payment Errors",
+        "billing_policy.md::Legal Threats and Payment Disputes",
+        "refund_policy.md::Refund Escalation"
+      ]
+    },
+    {
+      "id": "BILL-03",
+      "question": "Can the AI assistant reverse a payment or issue a refund without billing approval?",
+      "expected_source": "billing_policy.md",
+      "expected_section": "Refund for Payment Errors",
+      "hit_at_5": true,
+      "rank": 1,
+      "reciprocal_rank": 1.0,
+      "retrieved_sections": [
+        "billing_policy.md::Refund for Payment Errors",
+        "refund_policy.md::Limitations",
+        "billing_policy.md::Limitations",
+        "refund_policy.md::Refund Escalation",
+        "refund_policy.md::Refund Requests Outside the Return Window"
+      ]
+    },
+    {
+      "id": "BILL-04",
+      "question": "Someone used my card without permission. Should this be escalated immediately?",
+      "expected_source": "billing_policy.md",
+      "expected_section": "Fraud and Unauthorized Transactions",
+      "hit_at_5": true,
+      "rank": 1,
+      "reciprocal_rank": 1.0,
+      "retrieved_sections": [
+        "billing_policy.md::Fraud and Unauthorized Transactions",
+        "account_and_login.md::Unauthorized Account Access",
+        "refund_policy.md::Refund Escalation",
+        "product_faq.md::Escalation",
+        "billing_policy.md::Payment Security"
+      ]
+    },
+    {
+      "id": "ACC-01",
+      "question": "I forgot my account password. How can I reset it?",
+      "expected_source": "account_and_login.md",
+      "expected_section": "Forgot Password",
+      "hit_at_5": true,
+      "rank": 1,
+      "reciprocal_rank": 1.0,
+      "retrieved_sections": [
+        "account_and_login.md::Forgot Password",
+        "account_and_login.md::Password Reset",
+        "account_and_login.md::Account Recovery",
+        "account_and_login.md::Account Locked",
+        "account_and_login.md::Login Problems"
+      ]
+    },
+    {
+      "id": "ACC-02",
+      "question": "What steps should I try if I cannot log in to my account?",
+      "expected_source": "account_and_login.md",
+      "expected_section": "Login Problems",
+      "hit_at_5": true,
+      "rank": 1,
+      "reciprocal_rank": 1.0,
+      "retrieved_sections": [
+        "account_and_login.md::Login Problems",
+        "account_and_login.md::Account Locked",
+        "account_and_login.md::Unauthorized Account Access",
+        "account_and_login.md::Account Recovery",
+        "account_and_login.md::Forgot Password"
+      ]
+    },
+    {
+      "id": "ACC-03",
+      "question": "My account has been locked. Can AI unlock it without human verification?",
+      "expected_source": "account_and_login.md",
+      "expected_section": "Account Locked",
+      "hit_at_5": true,
+      "rank": 1,
+      "reciprocal_rank": 1.0,
+      "retrieved_sections": [
+        "account_and_login.md::Account Locked",
+        "account_and_login.md::Limitations",
+        "account_and_login.md::Account Recovery",
+        "billing_policy.md::Limitations",
+        "account_and_login.md::Unauthorized Account Access"
+      ]
+    },
+    {
+      "id": "ACC-04",
+      "question": "I suspect someone hacked my account. What should support do?",
+      "expected_source": "account_and_login.md",
+      "expected_section": "Unauthorized Account Access",
+      "hit_at_5": true,
+      "rank": 1,
+      "reciprocal_rank": 1.0,
+      "retrieved_sections": [
+        "account_and_login.md::Unauthorized Account Access",
+        "account_and_login.md::Account Locked",
+        "account_and_login.md::Account Recovery",
+        "billing_policy.md::Fraud and Unauthorized Transactions",
+        "account_and_login.md::Limitations"
+      ]
+    },
+    {
+      "id": "PROD-01",
+      "question": "I received a damaged product. How many days do I have to report it?",
+      "expected_source": "product_faq.md",
+      "expected_section": "Damaged Products",
+      "hit_at_5": true,
+      "rank": 1,
+      "reciprocal_rank": 1.0,
+      "retrieved_sections": [
+        "product_faq.md::Damaged Products",
+        "refund_policy.md::Damaged or Defective Products",
+        "product_faq.md::Defective Products",
+        "product_faq.md::Incorrect Product Delivered",
+        "shipping_policy.md::Delayed Deliveries"
+      ]
+    },
+    {
+      "id": "PROD-02",
+      "question": "My product stopped working within 15 days. Can I request a replacement?",
+      "expected_source": "product_faq.md",
+      "expected_section": "Defective Products",
+      "hit_at_5": true,
+      "rank": 1,
+      "reciprocal_rank": 1.0,
+      "retrieved_sections": [
+        "product_faq.md::Defective Products",
+        "refund_policy.md::Damaged or Defective Products",
+        "product_faq.md::Replacement Eligibility",
+        "product_faq.md::Damaged Products",
+        "refund_policy.md::Return Eligibility"
+      ]
+    },
+    {
+      "id": "PROD-03",
+      "question": "Is replacement approval guaranteed if the product is eligible?",
+      "expected_source": "product_faq.md",
+      "expected_section": "Replacement Eligibility",
+      "hit_at_5": true,
+      "rank": 1,
+      "reciprocal_rank": 1.0,
+      "retrieved_sections": [
+        "product_faq.md::Replacement Eligibility",
+        "product_faq.md::Replacement Process",
+        "product_faq.md::Escalation",
+        "product_faq.md::Limitations",
+        "product_faq.md::Defective Products"
+      ]
+    },
+    {
+      "id": "PROD-04",
+      "question": "I received the wrong product. What information should I give support?",
+      "expected_source": "product_faq.md",
+      "expected_section": "Incorrect Product Delivered",
+      "hit_at_5": true,
+      "rank": 1,
+      "reciprocal_rank": 1.0,
+      "retrieved_sections": [
+        "product_faq.md::Incorrect Product Delivered",
+        "billing_policy.md::Incorrect Billing Amount",
+        "product_faq.md::Damaged Products",
+        "shipping_policy.md::Delayed Deliveries",
+        "refund_policy.md::Damaged or Defective Products"
+      ]
+    }
+  ]
+}

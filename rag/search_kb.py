@@ -1,6 +1,7 @@
 
 import json
 import os
+from functools import lru_cache
 from pathlib import Path
 
 import faiss
@@ -24,24 +25,9 @@ EMBEDDING_MODEL = os.getenv(
 SIMILARITY_THRESHOLD = 0.40
 
 
-def search_kb(
-    query: str,
-    top_k: int = 5,
-    min_score: float = SIMILARITY_THRESHOLD
-) -> dict:
-    """
-    Search the company policy knowledge base.
-
-    Args:
-        query: Customer support question.
-        top_k: Maximum number of matching passages.
-
-    Returns:
-        Matching policy passages with sources and scores.
-    """
-
-    if not query or not query.strip():
-        raise ValueError("Search query cannot be empty.")
+@lru_cache(maxsize=1)
+def load_knowledge_base():
+    """Load FAISS and metadata once per application process."""
 
     if not INDEX_FILE.exists() or not METADATA_FILE.exists():
         raise FileNotFoundError(
@@ -59,7 +45,35 @@ def search_kb(
             "FAISS index and metadata count mismatch."
         )
 
-    client = OpenAI()
+    return index, metadata
+
+
+@lru_cache(maxsize=1)
+def get_openai_client():
+    """Reuse the OpenAI client across queries."""
+    return OpenAI()
+
+
+def search_kb(
+    query: str,
+    top_k: int = 5,
+    min_score: float = SIMILARITY_THRESHOLD
+) -> dict:
+    """Search policy documents using cached FAISS resources."""
+
+    if not query or not query.strip():
+        raise ValueError("Search query cannot be empty.")
+
+    if top_k < 1:
+        raise ValueError("top_k must be at least 1.")
+
+    if not INDEX_FILE.exists() or not METADATA_FILE.exists():
+        raise FileNotFoundError(
+            "FAISS index missing. Run vector_store.py first."
+        )
+
+    index, metadata = load_knowledge_base()
+    client = get_openai_client()
 
     response = client.embeddings.create(
         model=EMBEDDING_MODEL,
