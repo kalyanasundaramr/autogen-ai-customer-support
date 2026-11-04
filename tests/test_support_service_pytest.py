@@ -498,3 +498,122 @@ async def test_missing_log_agent_without_message_limit(
             sample_ticket_data["complaint"],
             object(),
         )
+@pytest.mark.asyncio
+async def test_agent_order_retry_recovers(
+    monkeypatch,
+    sample_ticket_data,
+):
+    """Retry an invalid agent sequence and persist only once."""
+
+    record = sample_ticket_data["record"].copy()
+    valid_messages = make_agent_messages(record)
+
+    invalid_messages = valid_messages.copy()
+    invalid_messages[1], invalid_messages[2] = (
+        invalid_messages[2],
+        invalid_messages[1],
+    )
+
+    attempts = []
+    saved_tickets = []
+
+    class FakeTeam:
+        def __init__(self, attempt_number):
+            self.attempt_number = attempt_number
+
+        async def run(self, task):
+            assert task == sample_ticket_data["complaint"]
+            attempts.append(self.attempt_number)
+
+            return SimpleNamespace(
+                messages=(
+                    invalid_messages
+                    if self.attempt_number == 1
+                    else valid_messages
+                ),
+                stop_reason="Log Agent completed",
+            )
+
+    def fake_create_workflow(model_client):
+        return FakeTeam(len(attempts) + 1)
+
+    monkeypatch.setattr(
+        support_service,
+        "create_support_workflow",
+        fake_create_workflow,
+    )
+
+    original_create_ticket = support_service.create_ticket
+
+    def tracked_create_ticket(*args, **kwargs):
+        ticket_id = original_create_ticket(*args, **kwargs)
+        saved_tickets.append(ticket_id)
+        return ticket_id
+
+    monkeypatch.setattr(
+        support_service,
+        "create_ticket",
+        tracked_create_ticket,
+    )
+
+    result = await support_service.process_customer_complaint(
+        complaint=sample_ticket_data["complaint"],
+        model_client=object(),
+    )
+
+    assert attempts == [1, 2]
+    assert len(saved_tickets) == 1
+    assert result["ticket_id"] == saved_tickets[0]
+    assert result["execution_order"] == [
+        "customer_query_agent",
+        "knowledge_base_agent",
+        "resolution_agent",
+        "log_agent",
+    ]
+@pytest.mark.asyncio
+async def test_agent_order_retry_exhausted(
+    monkeypatch,
+    sample_ticket_data,
+):
+    """Two invalid attempts must fail without saving a ticket."""
+
+    record = sample_ticket_data["record"].copy()
+    messages = make_agent_messages(record)
+
+    # Incorrect order: Resolution before Knowledge Base.
+    messages[1], messages[2] = messages[2], messages[1]
+
+    attempts = []
+    create_ticket_mock = MagicMock()
+
+    class FakeTeam:
+        async def run(self, task):
+            attempts.append(task)
+            return SimpleNamespace(
+                messages=messages,
+                stop_reason="Log Agent completed",
+            )
+
+    monkeypatch.setattr(
+        support_service,
+        "create_support_workflow",
+        lambda model_client: FakeTeam(),
+    )
+
+    monkeypatch.setattr(
+        support_service,
+        "create_ticket",
+        create_ticket_mock,
+    )
+
+    with pytest.raises(
+        RuntimeError,
+        match="Agent dependencies violated",
+    ):
+        await support_service.process_customer_complaint(
+            complaint=sample_ticket_data["complaint"],
+            model_client=object(),
+        )
+
+    assert len(attempts) == 2
+    create_ticket_mock.assert_not_called()

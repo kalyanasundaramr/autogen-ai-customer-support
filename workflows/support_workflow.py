@@ -101,30 +101,44 @@ def create_support_workflow(model_client):
         participants=participants,
         model_client=model_client,
         selector_prompt="""
-    You are coordinating a customer support workflow.
+            You are the speaker-selection coordinator for a
+            four-agent customer support workflow.
 
-    Available agents:
-    {roles}
+            Available agents:
+            {roles}
 
-    Conversation history:
-    {history}
+            Conversation history:
+            {history}
 
-    Select the next agent from:
-    {participants}
+            Participants:
+            {participants}
 
-    Workflow dependencies:
-    1. customer_query_agent analyzes the original complaint.
-    2. knowledge_base_agent retrieves relevant policy evidence.
-    3. resolution_agent drafts a response using the analysis
-    and retrieved evidence.
-    4. log_agent prepares the final structured ticket record.
+            Select the next agent based on the completed
+            agent responses in the conversation history.
 
-    Only select an agent when its required inputs are available.
-    Do not select log_agent before resolution_agent has completed.
-    Do not select an agent whose task is already complete.
+            REQUIRED DEPENDENCIES:
 
-    Return only the selected agent name.
-    """,
+            1. If customer_query_agent has not completed,
+            select customer_query_agent.
+
+            2. If customer_query_agent has completed but
+            knowledge_base_agent has not completed,
+            select knowledge_base_agent.
+
+            3. If knowledge_base_agent has completed but
+            resolution_agent has not completed,
+            select resolution_agent.
+
+            4. If resolution_agent has completed but
+            log_agent has not completed,
+            select log_agent.
+
+            Never select resolution_agent before knowledge_base_agent.
+            Never select log_agent before resolution_agent.
+            Never repeat a completed agent.
+
+            Return ONLY the exact agent name.
+            """,
         termination_condition=termination,
         allow_repeated_speaker=False,
     )

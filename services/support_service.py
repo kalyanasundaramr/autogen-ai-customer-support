@@ -3,6 +3,7 @@ import json
 
 from autogen_agentchat.messages import TextMessage
 
+
 from workflows.support_workflow import (
     create_support_workflow,
     AGENT_ORDER,
@@ -17,6 +18,52 @@ from services.response_language_service import (
     validate_response_language,
 )
 
+def validate_agent_execution_order(execution_order: list[str]) -> None:
+    """Validate agent completion order, allowing consecutive repeats."""
+
+    required_agents = [
+        "customer_query_agent",
+        "knowledge_base_agent",
+        "resolution_agent",
+        "log_agent",
+    ]
+
+    first_positions = {}
+
+    for index, agent_name in enumerate(execution_order):
+        if agent_name not in first_positions:
+            first_positions[agent_name] = index
+
+    missing_agents = [
+        name for name in required_agents
+        if name not in first_positions
+    ]
+
+    if missing_agents:
+        raise RuntimeError(
+            f"Workflow incomplete. Missing agents: {missing_agents}"
+        )
+
+    positions = [first_positions[name] for name in required_agents]
+
+    if positions != sorted(positions):
+        raise RuntimeError(
+            f"Agent dependencies violated: {execution_order}"
+        )
+
+    stage_index = {
+        name: index for index, name in enumerate(required_agents)
+    }
+
+    for previous, current in zip(execution_order, execution_order[1:]):
+        if stage_index[current] < stage_index[previous]:
+            raise RuntimeError(
+                f"Agent dependencies violated: {execution_order}"
+            )
+
+    if execution_order[-1] != "log_agent":
+        raise RuntimeError("Log Agent must complete the workflow.")
+    
 async def process_customer_complaint(
     complaint: str,
     model_client,
@@ -30,9 +77,45 @@ async def process_customer_complaint(
     if not isinstance(complaint, str) or not complaint.strip():
         raise ValueError("Customer complaint cannot be empty.")
 
-    team = create_support_workflow(model_client)
+    max_attempts = 2
 
-    result = await team.run(task=complaint.strip())
+    for attempt in range(max_attempts):
+        team = create_support_workflow(model_client)
+        result = await team.run(task=complaint.strip())
+
+        # Reject incomplete runs caused by the message limit.
+        stop_reason = result.stop_reason or ""
+        if "maximum" in stop_reason.lower() and "message" in stop_reason.lower():
+            raise RuntimeError(
+                "Workflow terminated due to maximum message limit. "
+                "Ticket creation aborted."
+            )
+
+        agent_messages = [
+            message
+            for message in result.messages
+            if isinstance(message, TextMessage)
+            and message.source in AGENT_ORDER
+        ]
+
+        execution_order = [
+            message.source for message in agent_messages
+        ]
+
+        try:
+            validate_agent_execution_order(execution_order)
+            break
+        except RuntimeError as exc:
+            # Retry only dependency/order failures.
+            if not (
+                str(exc).startswith("Agent dependencies violated:")
+                or str(exc).startswith("Workflow incomplete.")
+                or str(exc) == "Log Agent must complete the workflow."
+            ):
+                raise
+
+            if attempt == max_attempts - 1:
+                raise
 
            
     # Reject workflows that did not terminate successfully.
@@ -58,59 +141,8 @@ async def process_customer_complaint(
     ]
 
     
-    # Validate dependencies without requiring exactly four messages.
-    required_agents = [
-        "customer_query_agent",
-        "knowledge_base_agent",
-        "resolution_agent",
-        "log_agent",
-    ]
-
-    first_positions = {}
-
-    for index, agent_name in enumerate(execution_order):
-        if agent_name not in first_positions:
-            first_positions[agent_name] = index
-
-    missing_agents = [
-        name for name in required_agents
-        if name not in first_positions
-    ]
-
-    if missing_agents:
-        raise RuntimeError(
-            f"Workflow incomplete. Missing agents: {missing_agents}"
-        )
-
-    positions = [
-        first_positions[name] for name in required_agents
-    ]
-
-    if positions != sorted(positions):
-        raise RuntimeError(
-            f"Agent dependencies violated: {execution_order}"
-        )
-        # Reject backward transitions between workflow stages.
-    stage_index = {
-        name: index
-        for index, name in enumerate(required_agents)
-    }
-
-    for previous, current in zip(
-        execution_order,
-        execution_order[1:],
-    ):
-        if stage_index[current] < stage_index[previous]:
-            raise RuntimeError(
-                "Agent dependencies violated: "
-                f"{execution_order}"
-            )
-
-    if execution_order[-1] != "log_agent":
-        raise RuntimeError(
-            "Log Agent must complete the workflow."
-        )
-
+    # Validate agent dependencies before processing the ticket.
+    validate_agent_execution_order(execution_order)
 
     # Extract the Log Agent's structured record.
     log_response = agent_messages[-1].content
