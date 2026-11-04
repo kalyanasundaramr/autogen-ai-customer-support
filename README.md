@@ -361,7 +361,10 @@ Run the test suite:
 .\.venv\Scripts\python.exe -m pytest tests -q
 ```
 
-**Latest confirmed regression suite:** 118 automated tests passing.
+**Latest confirmed regression suite:** 121 automated tests passing.
+
+The regression suite includes model-driven agent orchestration
+validation and bounded retry tests for invalid agent execution order.
 
 The regression suite covers multi-agent orchestration,
 FAISS retrieval, ticket creation, deterministic escalation,
@@ -376,6 +379,45 @@ have also been manually verified.
 Testing covers agent orchestration, RAG retrieval, ticket creation, escalation, human review, simulated delivery, database isolation, and lifecycle management.
 
 The suite includes mocked components and does not replace full live-model evaluation.
+
+## Assignment Test Cases — Live VPS Validation
+
+The following eight customer support scenarios were executed against the deployed ShopEase Support Desk at https://support.kalyanr.tech.
+
+| Test | Scenario | Ticket ID | Category | Status | Result |
+|---|---|---|---|---|---|
+| 01 | Delayed order enquiry | TKT-000007 | Shipping | Pending | Pass |
+| 02 | Return and refund request | TKT-000008 | Refund | Pending | Pass |
+| 03 | Forgotten password | TKT-000009 | Account | Pending | Pass |
+| 04 | Broken blender replacement | TKT-000010 | Product | Pending | Pass |
+| 05 | Multiple charges and legal threat | TKT-000005 | Billing | Escalated | Pass |
+| 06 | Unsupported corporate gift cards | TKT-000006 | Other | Escalated | Pass |
+| 07 | Delivery delayed by 10 days | TKT-000004 | Shipping | Escalated | Pass |
+| 08 | Tamil-language delivery enquiry | TKT-000011 | Shipping | Pending | Partial — language quality |
+
+### Screenshot Evidence
+
+| Test | Screenshot |
+|---|---|
+| Shipping complaint | ![Shipping](screenshots/test01_shipping_complaint.png) |
+| Refund request | ![Refund](screenshots/test02_refund_request.png) |
+| Password reset | ![Account](screenshots/test03_password_reset.png) |
+| Damaged product | ![Product](screenshots/test04_damaged_product.png) |
+| Billing escalation | ![Billing](screenshots/test05_billing_escalation.png) |
+| Unsupported query | ![Unsupported](screenshots/test06_unsupported_query.png) |
+| Delivery escalation | ![Delivery](screenshots/test07_delivery_escalation.png) |
+| Tamil support | ![Tamil](screenshots/test08_tamil_support.png) |
+| Human review | ![Human Review](screenshots/human_review_workflow.png) |
+| Ticket log | ![Ticket Log](screenshots/ticket_log_report.png) |
+
+### Validation Notes
+
+- All eight scenarios successfully completed the four-agent workflow.
+- Routine complaints remained Pending for human review rather than being automatically marked Resolved.
+- Billing disputes, unsupported requests, and deliveries delayed beyond seven days triggered escalation.
+- Knowledge-base evidence was displayed for the routine complaint scenarios.
+- Tamil-language processing worked, but response fluency and formatting require improvement.
+- AI-generated responses are drafts requiring human approval before simulated delivery.
 
 ## Deployment Validation
 
