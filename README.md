@@ -308,6 +308,21 @@ Start the application from the project root:
 
 ```powershell
 .\.venv\Scripts\python.exe -m streamlit run app.py
+```
+
+
+### Initialize the FAISS Knowledge Base
+
+Before running the application for the first time, build the FAISS vector index from the sample support policies:
+
+```powershell
+.\.venv\Scripts\python.exe .\rag\vector_store.py
+```
+
+This command loads the policy documents, generates OpenAI embeddings, and saves the FAISS index and metadata under `data/faiss_index/`.
+
+**Note:** An OpenAI API key and internet access are required for embedding generation. The generated index is excluded from Git and must be initialized after cloning the repository.
+
 
 ## Docker Deployment
 
@@ -346,7 +361,7 @@ Run the test suite:
 .\.venv\Scripts\python.exe -m pytest tests -q
 ```
 
-**Latest confirmed regression suite:** 86 automated tests passing.
+**Latest confirmed regression suite:** 118 automated tests passing.
 
 The regression suite covers multi-agent orchestration,
 FAISS retrieval, ticket creation, deterministic escalation,
