@@ -127,18 +127,13 @@ def evaluate_escalation(
     # that have still not arrived.
     
 
-    
     expected_ago_pattern = (
-        r"\b(?:order|package|parcel|delivery|shipment)\b"
-        r".{0,100}?"
-        r"\b(?:expected|due|scheduled)\b"
-        r".{0,60}?"
-        r"\b(\d+)\s+days?\s+ago\b"
-    )
-
-
-
-
+    r"\b(?:order|package|parcel|delivery|shipment)\b"
+    r".{0,100}?"
+    r"\b(?:expected|due|scheduled|supposed\s+to\s+arrive)\b"
+    r".{0,60}?"
+    r"(\d+)\s+days?\s+ago\b"
+)
     
     not_delivered_pattern = (
         r"\b(?:"

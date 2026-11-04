@@ -258,13 +258,48 @@ with tab_complaint:
         ticket = result["ticket"]
 
         st.divider()
+
+        st.success("Complaint registered successfully!")
+
+        col_ticket, col_review = st.columns([2, 1])
+
+        with col_ticket:
+            st.metric(
+                "Ticket ID",
+                result["ticket_id"],
+            )
+
+        with col_review:
+            st.metric(
+                "Review Status",
+                ticket.get("review_status") or "Pending",
+            )
+
+        st.caption(
+            "Please keep this Ticket ID for tracking "
+            "your complaint."
+        )
+
         st.subheader("AI Processing Results")
 
         st.markdown("#### Agent Execution")
-        for index, agent in enumerate(
-            result.get("execution_order", []), start=1
-        ):
-            st.write(f"{index}. {agent}")
+
+        agent_labels = {
+            "customer_query_agent": "Query Agent",
+            "knowledge_base_agent": "Knowledge Agent",
+            "resolution_agent": "Resolution Agent",
+            "log_agent": "Log Agent",
+        }
+
+        execution_order = result.get("execution_order", [])
+
+        agent_columns = st.columns(4)
+
+        for index, agent_name in enumerate(execution_order[:4]):
+            with agent_columns[index]:
+                st.success(
+                    f"✓ {agent_labels.get(agent_name, agent_name)}"
+                )
 
         col1, col2, col3 = st.columns(3)
         col1.metric("Category", ticket["category"])
@@ -294,12 +329,13 @@ with tab_complaint:
         st.markdown("#### Proposed Customer Response")
         
         st.text_area(
-            "AI-generated draft",
-            value=ticket["proposed_response"],
-            height=230,
-            disabled=True,
-            key=f"ai_response_{ticket['ticket_id']}",
-        )
+        "AI-generated draft",
+        value=ticket["proposed_response"],
+        height=230,
+        disabled=False,
+        key=f"ai_response_{ticket['ticket_id']}",
+        help="AI-generated draft for review. Editing this field does not save changes to the ticket.",
+    )
 
         st.markdown("#### Knowledge Base Evidence")
 
