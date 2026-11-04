@@ -27,8 +27,9 @@ async def main():
         agent = create_knowledge_base_agent(model_client)
 
         complaint = (
-            "My order is delayed beyond the estimated "
-            "delivery date. What does your shipping policy say?"
+            "I purchased a pair of shoes, but they do not fit "
+            "properly. I would like to return them and request "
+            "a refund. Please explain the return and refund process."
         )
 
         print("\nCustomer Complaint:")
@@ -44,6 +45,7 @@ async def main():
                     if call.name == "search_kb":
                         tool_called = True
                         print("\nTool called:", call.name)
+                        print("Tool arguments:", call.arguments)
             if isinstance(message, ToolCallExecutionEvent):
                 print("\n========== RAW TOOL RESULTS ==========")
 

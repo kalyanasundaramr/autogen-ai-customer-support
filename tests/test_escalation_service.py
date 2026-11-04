@@ -142,3 +142,31 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+def test_delivery_expected_10_days_ago_not_delivered():
+    """A delivery overdue by 10 days must trigger escalation."""
+    from services.escalation_service import evaluate_escalation
+
+    complaint = (
+        "My order was expected to arrive 10 days ago, "
+        "but it has not been delivered yet. "
+        "Could you please check the delivery status "
+        "and let me know what I should do next?"
+    )
+
+    record = {
+        "category": "Shipping",
+        "urgency": "Medium",
+        "sentiment": "Neutral",
+        "confidence_score": 0.90,
+        "evidence_found": True,
+        "escalation_signals": [],
+    }
+
+    result = evaluate_escalation(complaint, record)
+
+    assert result["escalation_decision"] == "Escalated"
+    assert result["requires_human_review"] is True
+    assert "Delivery delayed more than 7 days" in (
+        result["escalation_reason"]
+    )

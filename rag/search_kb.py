@@ -116,13 +116,56 @@ def search_kb(
             "similarity_score": round(float(score), 4)
         })
 
+    
+    # Expand retrieval for refund and return complaints.
+    # Use the existing query embedding; no second API call.
+    query_lower = query.casefold()
+
+    is_refund_query = any(
+        term in query_lower
+        for term in ("refund", "return", "exchange")
+    )
+
+    if is_refund_query and top_k == 5 and min_score == SIMILARITY_THRESHOLD:
+        expanded_scores, expanded_indices = index.search(
+            query_vector,
+            min(10, index.ntotal),
+        )
+
+        expanded_matches = []
+
+        for score, idx in zip(
+            expanded_scores[0],
+            expanded_indices[0],
+        ):
+            if idx < 0 or float(score) < 0.35:
+                continue
+
+            chunk = metadata[int(idx)]
+
+            expanded_matches.append({
+                "chunk_id": chunk["chunk_id"],
+                "source": chunk["source"],
+                "section": chunk["section"],
+                "content": chunk["content"],
+                "similarity_score": round(float(score), 4),
+            })
+
+        matches = expanded_matches
+
     return {
         "query": query,
         "evidence_found": bool(matches),
         "matches": matches,
-        "similarity_threshold": SIMILARITY_THRESHOLD,
-        "requires_escalation": not bool(matches)
+        "similarity_threshold": (
+            0.35 if is_refund_query
+            and top_k == 5
+            and min_score == SIMILARITY_THRESHOLD
+            else min_score
+        ),
+        "requires_escalation": not bool(matches),
     }
+
 
 
 if __name__ == "__main__":

@@ -13,7 +13,9 @@ from services.ticket_service import (
 )
 
 from services.ticket_validator import validate_ticket_record
-
+from services.response_language_service import (
+    validate_response_language,
+)
 
 async def process_customer_complaint(
     complaint: str,
@@ -32,8 +34,7 @@ async def process_customer_complaint(
 
     result = await team.run(task=complaint.strip())
 
-     
-       
+           
     # Reject workflows that did not terminate successfully.
     stop_reason = result.stop_reason or ""
 
@@ -139,6 +140,12 @@ async def process_customer_complaint(
 
     # Validate the normalized ticket record.
     record = validate_ticket_record(record)
+
+    # Verify response language before saving the ticket.
+    validate_response_language(
+        language=record["language"],
+        response=record["proposed_response"],
+    )
 
     # create_ticket() applies authoritative
     # Python escalation rules before saving.

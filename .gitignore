@@ -32,3 +32,5 @@ htmlcov/
 # Local backup files
 *.backup
 *.backup.*
+# Generated customer support ticket logs
+/data/tickets.csv

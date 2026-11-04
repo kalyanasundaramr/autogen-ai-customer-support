@@ -292,12 +292,13 @@ with tab_complaint:
         )
 
         st.markdown("#### Proposed Customer Response")
+        
         st.text_area(
             "AI-generated draft",
             value=ticket["proposed_response"],
             height=230,
             disabled=True,
-            key="latest_ai_response",
+            key=f"ai_response_{ticket['ticket_id']}",
         )
 
         st.markdown("#### Knowledge Base Evidence")

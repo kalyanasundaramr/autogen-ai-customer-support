@@ -113,6 +113,50 @@ Documents are chunked, embedded using `text-embedding-3-small`, and indexed with
 
 The policies are fictional and intended for educational demonstration.
 
+
+### Multilingual Customer Support
+
+The application supports multilingual customer complaint processing.
+
+The Customer Query Agent identifies the customer's language,
+while the Knowledge Base Agent retrieves supporting evidence
+from English-language policy documents.
+
+For non-English complaints, the Knowledge Base Agent
+translates the complete complaint meaning into English
+before searching FAISS.
+
+The Resolution Agent then generates a customer-facing
+response in the customer's original language.
+
+#### Verified Tamil Complaint
+
+**Customer complaint:**
+
+எனது ஆர்டர் வர வேண்டிய தேதியைத் தாண்டியும் இன்னும் வரவில்லை.
+எனது ஆர்டர் எப்போது வரும்? தயவுசெய்து உதவுங்கள்.
+
+**Processing results:**
+
+- Category: Shipping
+- Urgency: Medium
+- Knowledge base: shipping_policy.md
+- AI confidence: 0.80
+- Ticket ID: TKT-000030
+- Ticket created successfully
+- Customer response generated in Tamil
+
+The response included a Tamil greeting, response body,
+and support-team signature.
+
+The ticket was subsequently approved by a human reviewer
+and transitioned to Resolved.
+
+**Note:** Multilingual processing has been manually
+verified using Tamil. Additional languages require
+further testing before production use.
+
+
 ### 3. Escalation Engine
 
 Deterministic escalation rules identify complaints requiring additional attention, including:
@@ -150,6 +194,51 @@ The application provides five tabs:
 The application manages ticket states including Pending, Escalated, Resolved, and Closed.
 
 Ticket creation, review decisions, revisions, simulated delivery, and lifecycle changes are recorded in SQLite.
+
+
+### Persistent CSV Ticket Logging
+
+The application maintains customer support tickets in both
+SQLite and CSV format.
+
+**CSV file:** `data/tickets.csv`
+
+Every newly created ticket is automatically exported to CSV.
+
+The CSV contains the following fields:
+
+| Field | Description |
+|---|---|
+| ticket_id | Unique support ticket identifier |
+| timestamp | Ticket creation timestamp |
+| customer_name_order_id | Customer name or order reference, when available |
+| complaint | Original customer complaint |
+| category | Complaint classification |
+| urgency | Low, Medium, or High |
+| sentiment | Customer sentiment |
+| kb_sources | Supporting knowledge-base documents |
+| response | AI-generated customer response |
+| status | Pending, Escalated, Resolved, or Closed |
+| escalation_reason | Reason for escalation, if applicable |
+
+CSV synchronization occurs after ticket creation and
+successful ticket lifecycle status changes.
+
+The CSV file is regenerated from the SQLite ticket records,
+ensuring that ticket status updates are reflected in both
+storage formats.
+
+**Verified example:**
+
+Ticket `TKT-000030` was created with `Pending` status,
+approved by a human reviewer, and subsequently transitioned
+to `Resolved`.
+
+The final status was verified as `Resolved` in both SQLite
+and CSV.
+
+SQLite remains the primary source of truth for ticket data.
+
 
 ### 7. Simulated Customer Response Delivery
 
@@ -215,11 +304,10 @@ The generated FAISS index is excluded from Git, so a fresh clone requires index 
 
 ### Run the Streamlit Dashboard
 
-```powershell
-.\.venv\Scripts\python.exe -m streamlit run ui/support_dashboard.py
-```
+Start the application from the project root:
 
-Open the local Streamlit URL shown in the terminal.
+```powershell
+.\.venv\Scripts\python.exe -m streamlit run app.py
 
 ## Docker Deployment
 
@@ -258,7 +346,17 @@ Run the test suite:
 .\.venv\Scripts\python.exe -m pytest tests -q
 ```
 
-**Latest confirmed regression suite:** 71 automated tests passing.
+**Latest confirmed regression suite:** 86 automated tests passing.
+
+The regression suite covers multi-agent orchestration,
+FAISS retrieval, ticket creation, deterministic escalation,
+human-in-the-loop review, SQLite persistence,
+CSV ticket logging, simulated delivery,
+ticket lifecycle transitions, and audit history.
+
+The test suite includes mocked components.
+Live OpenAI integration and multilingual behavior
+have also been manually verified.
 
 Testing covers agent orchestration, RAG retrieval, ticket creation, escalation, human review, simulated delivery, database isolation, and lifecycle management.
 

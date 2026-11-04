@@ -146,8 +146,13 @@ def create_ticket(original_complaint: str, record: dict) -> str:
             ),
         )
 
-    return ticket_id
+       # Import after the SQLite transaction has committed.
+    # Avoid circular imports during module initialization.
+    from services.ticket_csv_service import sync_tickets_csv
 
+    sync_tickets_csv()
+
+    return ticket_id
 
 def get_ticket(ticket_id: str) -> dict | None:
     """

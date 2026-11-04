@@ -125,20 +125,37 @@ def evaluate_escalation(
             reasons.append("Delivery delayed more than 7 days")
     # Detect deliveries expected more than 7 days ago
     # that have still not arrived.
+    
+
+    
     expected_ago_pattern = (
         r"\b(?:order|package|parcel|delivery|shipment)\b"
         r".{0,100}?"
         r"\b(?:expected|due|scheduled)\b"
-        r"(?:\s+\w+){0,4}?"
-        r"\s+(\d+)\s+days?\s+ago\b"
+        r".{0,60}?"
+        r"\b(\d+)\s+days?\s+ago\b"
     )
 
+
+
+
+    
     not_delivered_pattern = (
-        r"\b(?:not arrived|not delivered|"
-        r"still not arrived|still not delivered|"
-        r"hasn't arrived|has not arrived|"
-        r"haven't received|have not received)\b"
+        r"\b(?:"
+        r"not arrived|"
+        r"not delivered|"
+        r"not been delivered|"
+        r"still not arrived|"
+        r"still not delivered|"
+        r"hasn't arrived|"
+        r"has not arrived|"
+        r"hasn't been delivered|"
+        r"has not been delivered|"
+        r"haven't received|"
+        r"have not received"
+        r")\b"
     )
+
 
     expected_match = re.search(expected_ago_pattern, complaint)
 

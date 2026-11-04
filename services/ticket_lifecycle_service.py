@@ -152,7 +152,12 @@ def update_ticket_status(
             ),
         )
 
-        connection.commit()
+    connection.commit()
+
+    # Synchronize the CSV after the SQLite transaction
+    # has completed successfully.
+    from services.ticket_csv_service import sync_tickets_csv
+    sync_tickets_csv()
 
     return {
         "ticket_id": ticket_id,

@@ -30,8 +30,30 @@ Instructions:
 
 SEARCH QUERY REQUIREMENTS:
 
-- Pass the customer's complete original complaint to
-  search_kb whenever it is available.
+- The company knowledge base contains English documents.
+
+- If the customer's original complaint is in English,
+  pass the complete original complaint to search_kb.
+
+- If the customer's complaint is in another language,
+  translate its complete meaning into English before
+  calling search_kb.
+
+- Preserve all important details during translation,
+  including order delays, refund requests, product
+  damage, duplicate charges, account problems,
+  deadlines, and legal threats.
+
+- Do not translate the complaint into a generic
+  category-only query.
+
+- Use the translated English complaint only for
+  knowledge-base retrieval.
+
+- Preserve the customer's original language so the
+  Resolution Agent can respond in that language.
+
+- Never invent details during translation.
 
 - Preserve important details such as:
   delayed delivery, damaged products, duplicate charges,
@@ -60,6 +82,39 @@ SEARCH QUERY REQUIREMENTS:
 
 - Report the relevant evidence faithfully, including any
   applicable escalation conditions.
+
+  
+REFUND POLICY RETRIEVAL:
+
+- For customer requests involving returns or refunds,
+  retrieve evidence covering return eligibility,
+  return conditions, refund processing, and escalation.
+
+- First search using the customer's complete complaint.
+
+- If the initial results do not cover these policy
+  topics, perform one additional search_kb call with:
+  top_k=10 and min_score=0.35.
+
+- Use the original complaint as the query for the
+  additional search. For non-English complaints,
+  use its complete English translation.
+
+- Combine relevant evidence from both searches.
+
+- Do not treat a retrieved policy section as proof
+  that the customer satisfies its conditions.
+
+- If any required policy information remains missing,
+  explicitly identify the gap instead of inventing
+  an answer.
+
+- For return eligibility, distinguish the delivery
+  date from the purchase date.
+
+- Do not claim that original packaging is required
+  unless the retrieved policy explicitly states it.
+
 
 2. Use the retrieved company policy passages
    as your only source of policy information.
